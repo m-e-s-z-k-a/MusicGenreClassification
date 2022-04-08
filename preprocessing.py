@@ -5,6 +5,25 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
+import matplotlib.pyplot as plt
+
+
+def plots(history):
+    fig, axs = plt.subplots(1, 2)
+    axs[0].plot(history.history["accuracy"], label="train accuracy", color="lightcoral")
+    axs[0].plot(history.history["val_accuracy"], label="test accuracy", color="darkred")
+    axs[0].set_ylabel("Accuracy")
+    axs[0].legend(loc="lower right")
+    axs[0].set_title("Accuracy Plot")
+
+    axs[1].plot(history.history["loss"], label="train error", color="slateblue")
+    axs[1].plot(history.history["val_loss"], label="test error", color="darkblue")
+    axs[1].set_ylabel("Error")
+    axs[1].legend(loc="lower right")
+    axs[1].set_title("Error Plot")
+
+    plt.show()
+
 
 PATH_TO_DATASET = "/home/dorota/Downloads/Data/genres_original"
 PATH_TO_JSON = "/home/dorota/Documents/biologiczne/projekt_1/json_files/data.json"
@@ -17,7 +36,7 @@ SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
 
 
 
-def save_mfcc(path_to_dataset, path_to_json, mfcc_number=13, fft_number = 2048, hop_length=512, segments_number=5):
+def save_mfcc(path_to_dataset, path_to_json, mfcc_number=13, fft_number = 2048, hop_length=512, segments_number=10):
     data_dict = {
         "genres": [],
         "mfcc" : [],
@@ -64,22 +83,33 @@ if __name__ == '__main__':
     inputs_training, inputs_test, targets_training, targets_test = train_test_split(inputs, targets, test_size=0.3)
 
     model = keras.Sequential([
+        keras.layers.Conv1D(filters=128,
+                               kernel_size=3,
+                               activation='relu',
+                               input_shape=(inputs.shape[1], inputs.shape[2])),
+
+        keras.layers.MaxPooling1D(name='max1'),
+
+        keras.layers.Conv1D(filters=64,
+                               kernel_size=3,
+                               activation='relu'),
+
+        keras.layers.MaxPooling1D(name='max2'),
         keras.layers.Flatten(input_shape=(inputs.shape[1], inputs.shape[2])),
-        keras.layers.Dense(512, activation="relu"),
-       # keras.layers.Dropout(0.3),
-        keras.layers.Dense(256, activation="relu"),
-       # keras.layers.Dropout(0.3),
-        keras.layers.Dense(128, activation="relu"),
-        #keras.layers.Dropout(0.3),
+        keras.layers.Dense(512, activation="relu", kernel_regularizer=keras.regularizers.l2(0.001)),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(256, activation="relu", kernel_regularizer=keras.regularizers.l2(0.001)),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(128, activation="relu", kernel_regularizer=keras.regularizers.l2(0.001)),
+        keras.layers.Dropout(0.5),
         keras.layers.Dense(10, activation="softmax")
     ])
 
-    #, kernel_regularizer=keras.regularizers.l2(0.001)
 
     optimizer = keras.optimizers.Adam(learning_rate=0.001)
     model.compile(optimizer, loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     model.summary()
 
-    model.fit(inputs_training, targets_training, validation_data=(inputs_test, targets_test), epochs=100, batch_size=32)
+    history = model.fit(inputs_training, targets_training, validation_data=(inputs_test, targets_test), epochs=100, batch_size=32)
 
-
+    plots(history)
