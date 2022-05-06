@@ -9,11 +9,11 @@ from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
 import matplotlib.pyplot as plt
 
-# PATH_TO_DATASET = "/mnt/c/Users/niczk/OneDrive/Documents/studies/4sem/biologiczne/projekt1/MusicGenreClassification/archive/Data/genres_original"
-# PATH_TO_JSON = "/mnt/c/Users/niczk/OneDrive/Documents/studies/4sem/biologiczne/projekt1/MusicGenreClassification/json_files/data.json"
+PATH_TO_DATASET = "/mnt/c/Users/niczk/OneDrive/Documents/studies/4sem/biologiczne/projekt1/MusicGenreClassification/archive/Data/genres_original"
+PATH_TO_JSON = "/mnt/c/Users/niczk/OneDrive/Documents/studies/4sem/biologiczne/projekt1/MusicGenreClassification/json_files/data.json"
 
-PATH_TO_DATASET = " "
-PATH_TO_JSON = "C:\\Users\\niczk\\OneDrive\\Documents\\studies\\4sem\\biologiczne\\projekt1\\MusicGenreClassification\\json_files"
+# PATH_TO_DATASET = " "
+# PATH_TO_JSON = "C:\\Users\\niczk\\OneDrive\\Documents\\studies\\4sem\\biologiczne\\projekt1\\MusicGenreClassification\\json_files"
 
 SAMPLE_RATE = 22050
 DURATION = 30
@@ -71,13 +71,13 @@ def preprocess(test_size, validation_size):
 
 def plots(history):
     fig, axs = plt.subplots(1, 2)
-    axs[0].plot(history.history["accuracy"], label="train accuracy", color="lightcoral")
-    axs[0].plot(history.history["val_accuracy"], label="test accuracy", color="darkred")
+    axs[0].plot(history.history["accuracy"], label="train accuracy", color="aquamarine")
+    axs[0].plot(history.history["val_accuracy"], label="test accuracy", color="lightseagreen")
     axs[0].set_ylabel("Accuracy")
     axs[0].legend(loc="lower right")
     axs[0].set_title("Accuracy Plot")
 
-    axs[1].plot(history.history["loss"], label="train error", color="slateblue")
+    axs[1].plot(history.history["loss"], label="train error", color="skyblue")
     axs[1].plot(history.history["val_loss"], label="test error", color="darkblue")
     axs[1].set_ylabel("Error")
     axs[1].legend(loc="lower right")
@@ -94,8 +94,9 @@ if __name__ == '__main__':
 
     model = keras.Sequential([
 
-        keras.layers.LSTM(64, input_shape=inputs, return_sequences=True),
-        keras.layers.LSTM(64),
+        keras.layers.LSTM(128, input_shape=inputs, return_sequences=True),
+        keras.layers.Dropout(0.3),
+        keras.layers.LSTM(128),
         keras.layers.Dense(64, activation = "relu"),
         keras.layers.Dropout(0.3),
         keras.layers.Dense(10, activation="softmax")
@@ -106,6 +107,6 @@ if __name__ == '__main__':
     model.compile(optimizer, loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     model.summary()
 
-    history = model.fit(inputs_training, targets_training, validation_data=(inputs_test, targets_test), epochs=30, batch_size=32)
+    history = model.fit(inputs_training, targets_training, validation_data=(inputs_validation, targets_validation), epochs=50, batch_size=32)
 
     plots(history)
