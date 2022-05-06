@@ -94,8 +94,9 @@ if __name__ == '__main__':
 
     model = keras.Sequential([
 
-        keras.layers.LSTM(64, input_shape=inputs, return_sequences=True),
-        keras.layers.LSTM(64),
+        keras.layers.LSTM(128, input_shape=inputs, return_sequences=True),
+        keras.layers.Dropout(0.3),
+        keras.layers.LSTM(128),
         keras.layers.Dense(64, activation = "relu"),
         keras.layers.Dropout(0.3),
         keras.layers.Dense(10, activation="softmax")
